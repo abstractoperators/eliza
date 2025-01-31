@@ -20,7 +20,7 @@ async function fetchCategories(runtime: IAgentRuntime): Promise<CategoryItem[]> 
         {
             headers: {
                 'accept': 'application/json',
-                'x-cg-pro-api-key': apiKey
+                [headerKey]: apiKey
             },
             timeout: 5000 // 5 second timeout
         }
