@@ -13,7 +13,7 @@ const MAX_RETRIES = 3;
 
 async function fetchCategories(runtime: IAgentRuntime): Promise<CategoryItem[]> {
     const config = await validateCoingeckoConfig(runtime);
-    const { baseUrl, apiKey } = getApiConfig(config);
+    const { baseUrl, apiKey, headerKey } = getApiConfig(config);
 
     const response = await axios.get<CategoryItem[]>(
         `${baseUrl}/coins/categories/list`,
