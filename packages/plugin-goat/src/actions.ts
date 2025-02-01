@@ -1,8 +1,10 @@
 import { getOnChainTools } from "@goat-sdk/adapter-vercel-ai";
-import { MODE, USDC, erc20 } from "@goat-sdk/plugin-erc20";
+import { MODE, USDC, erc20, Token } from "@goat-sdk/plugin-erc20";
 import { kim } from "@goat-sdk/plugin-kim";
-import { sendETH } from "@goat-sdk/wallet-evm";
+// import { sendETH } from "@goat-sdk/wallet-evm";
 import { WalletClientBase } from "@goat-sdk/core";
+// import { uniswap } from "@goat-sdk/plugin-uniswap";
+// import { jupiter } from "@goat-sdk/plugin-jupiter";
 
 import {
     generateText,
@@ -14,23 +16,46 @@ import {
     composeContext,
 } from "@elizaos/core";
 
+// https://explorer.bitquery.io/ethereum/token/0xdac17f958d2ee523a2206206994597c13d831ec7
+const USDT: Token = {
+    decimals: 6,
+    symbol: "USDT",
+    name: "Tether USD",
+    chains: {
+        1: {
+            contractAddress: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+        },
+    },
+};
+
 export async function getOnChainActions(wallet: WalletClientBase) {
     const actionsWithoutHandler = [
         {
             name: "SWAP_TOKENS",
-            description: "Swap two different tokens using KIM protocol",
+            description: "Swap two different tokens",
             similes: [],
             validate: async () => true,
             examples: [],
         },
         // 1. Add your actions here
+        {
+            name: "GET_BALANCE",
+            description: "Get the balance of a token",
+            similes: [],
+            validate: async () => true,
+            examples: [],
+        }
     ];
 
     const tools = await getOnChainTools({
         wallet: wallet,
         // 2. Configure the plugins you need to perform those actions
-        plugins: [sendETH(), erc20({ tokens: [USDC, MODE] }), kim()],
+        // plugins: [sendETH(), erc20({ tokens: [USDC] }), kim()],
+        plugins: [erc20({ tokens: [USDC, USDT] }), kim()],
+
     });
+
+    console.log("tools", tools);
 
     // 3. Let GOAT handle all the actions
     return actionsWithoutHandler.map((action) => ({
@@ -67,9 +92,9 @@ function getActionHandler(
                 tools,
                 maxSteps: 10,
                 // Uncomment to see the log each tool call when debugging
-                // onStepFinish: (step) => {
-                //     console.log(step.toolResults);
-                // },
+                onStepFinish: (step) => {
+                    console.log(step.toolResults);
+                },
                 modelClass: ModelClass.LARGE,
             });
 
@@ -204,6 +229,6 @@ async function generateResponse(
     return generateText({
         runtime,
         context,
-        modelClass: ModelClass.SMALL,
+        modelClass: ModelClass.LARGE,
     });
 }
