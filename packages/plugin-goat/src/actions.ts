@@ -44,6 +44,13 @@ export async function getOnChainActions(wallet: WalletClientBase) {
             similes: [],
             validate: async () => true,
             examples: [],
+        },
+        {
+            name: "TRANSFER",
+            description: "Transfer tokens to a provided address",
+            similes: [],
+            validate: async () => true, // TODO: Maybe verify that the address is valid
+            examples: [],
         }
     ];
 
@@ -79,6 +86,7 @@ function getActionHandler(
         let currentState = state ?? (await runtime.composeState(message));
         currentState = await runtime.updateRecentMessageState(currentState);
 
+        console.log(`tools`, tools.name, tools.description);
         try {
             // 1. Call the tools needed
             const context = composeActionContext(
@@ -94,6 +102,7 @@ function getActionHandler(
                 // Uncomment to see the log each tool call when debugging
                 onStepFinish: (step) => {
                     console.log(step.toolResults);
+                    console.log(step.text);
                 },
                 modelClass: ModelClass.LARGE,
             });
