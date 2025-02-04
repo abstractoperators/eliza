@@ -1,6 +1,7 @@
 import { getOnChainTools } from "@goat-sdk/adapter-vercel-ai";
 import { USDC, erc20, Token } from "@goat-sdk/plugin-erc20";
 import { WalletClientBase } from "@goat-sdk/core";
+import { sendETH } from "@goat-sdk/wallet-evm";
 
 import {
     generateText,
@@ -36,7 +37,7 @@ export async function getOnChainActions(wallet: WalletClientBase) {
         },
         {
             name: "TRANSFER",
-            description: "Transfer tokens to a provided address",
+            description: "Transfer tokens or ethereum to a provided address",
             similes: [],
             validate: async () => true, 
             examples: [],
@@ -46,7 +47,7 @@ export async function getOnChainActions(wallet: WalletClientBase) {
     const tools = await getOnChainTools({
         wallet: wallet,
         // 2. Configure the plugins you need to perform those actions
-        plugins: [erc20({ tokens: [USDC, USDT] })],
+        plugins: [sendETH(), erc20({ tokens: [USDC, USDT] })],
 
     });
 
