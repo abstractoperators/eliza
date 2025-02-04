@@ -1,6 +1,5 @@
 import { getOnChainTools } from "@goat-sdk/adapter-vercel-ai";
 import { USDC, erc20, Token } from "@goat-sdk/plugin-erc20";
-import { elizaLogger } from "@elizaos/core";
 import { WalletClientBase } from "@goat-sdk/core";
 
 import {
@@ -74,7 +73,6 @@ function getActionHandler(
         let currentState = state ?? (await runtime.composeState(message));
         currentState = await runtime.updateRecentMessageState(currentState);
 
-        elizaLogger.info(`tools`, tools.name, tools.description);
         try {
             // 1. Call the tools needed
             const context = composeActionContext(
@@ -90,7 +88,6 @@ function getActionHandler(
                 // Uncomment to see the log each tool call when debugging
                 onStepFinish: (step) => {
                     console.log(step.toolResults);
-                    console.log(step.text);
                 },
                 modelClass: ModelClass.LARGE,
             });
