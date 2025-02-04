@@ -1,10 +1,7 @@
 import { getOnChainTools } from "@goat-sdk/adapter-vercel-ai";
-import { MODE, USDC, erc20, Token } from "@goat-sdk/plugin-erc20";
-import { kim } from "@goat-sdk/plugin-kim";
-// import { sendETH } from "@goat-sdk/wallet-evm";
+import { USDC, erc20, Token } from "@goat-sdk/plugin-erc20";
+import { elizaLogger } from "@elizaos/core";
 import { WalletClientBase } from "@goat-sdk/core";
-// import { uniswap } from "@goat-sdk/plugin-uniswap";
-// import { jupiter } from "@goat-sdk/plugin-jupiter";
 
 import {
     generateText,
@@ -30,13 +27,6 @@ const USDT: Token = {
 
 export async function getOnChainActions(wallet: WalletClientBase) {
     const actionsWithoutHandler = [
-        {
-            name: "SWAP_TOKENS",
-            description: "Swap two different tokens",
-            similes: [],
-            validate: async () => true,
-            examples: [],
-        },
         // 1. Add your actions here
         {
             name: "GET_BALANCE",
@@ -49,7 +39,7 @@ export async function getOnChainActions(wallet: WalletClientBase) {
             name: "TRANSFER",
             description: "Transfer tokens to a provided address",
             similes: [],
-            validate: async () => true, // TODO: Maybe verify that the address is valid
+            validate: async () => true, 
             examples: [],
         }
     ];
@@ -57,13 +47,11 @@ export async function getOnChainActions(wallet: WalletClientBase) {
     const tools = await getOnChainTools({
         wallet: wallet,
         // 2. Configure the plugins you need to perform those actions
-        // plugins: [sendETH(), erc20({ tokens: [USDC] }), kim()],
-        plugins: [erc20({ tokens: [USDC, USDT] }), kim()],
+        plugins: [erc20({ tokens: [USDC, USDT] })],
 
     });
 
-    console.log("tools", tools);
-
+    
     // 3. Let GOAT handle all the actions
     return actionsWithoutHandler.map((action) => ({
         ...action,
@@ -86,7 +74,7 @@ function getActionHandler(
         let currentState = state ?? (await runtime.composeState(message));
         currentState = await runtime.updateRecentMessageState(currentState);
 
-        console.log(`tools`, tools.name, tools.description);
+        elizaLogger.info(`tools`, tools.name, tools.description);
         try {
             // 1. Call the tools needed
             const context = composeActionContext(
