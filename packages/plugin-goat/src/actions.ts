@@ -14,6 +14,7 @@ import {
 } from "@elizaos/core";
 
 // https://explorer.bitquery.io/ethereum/token/0xdac17f958d2ee523a2206206994597c13d831ec7
+// Contract address for USDT on Ethereum
 const USDT: Token = {
     decimals: 6,
     symbol: "USDT",
