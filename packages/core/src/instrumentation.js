@@ -9,7 +9,7 @@ export function register() {
     
     try {
         console.log("Registering OpenTelemetry...");
-        registerOTel("test-braintrust2");
+        registerOTel("Eliza");
         console.log("OpenTelemetry registration successful");
     } catch (error) {
         console.error("Failed to register OpenTelemetry:", error);
