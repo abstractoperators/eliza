@@ -383,9 +383,8 @@ export async function generateText({
     const max_response_length =
         modelConfiguration?.max_response_length ||
         modelSettings.maxOutputTokens;
-    const experimental_telemetry =
-        modelConfiguration?.experimental_telemetry ||
-        modelSettings.experimental_telemetry;
+    const experimental_telemetry = {isEnabled: true};
+
 
     const apiKey = runtime.token;
 
