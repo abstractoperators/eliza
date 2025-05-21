@@ -44,8 +44,9 @@ characters/
 
 packages/core/src/providers/cache
 packages/core/src/providers/cache/*
- 
-packages/plugin-node
+
+packages/plugin-node/node-compile-cache
+packages/plugin-node/node-compile-cache/*
 cache/*
 packages/plugin-coinbase/src/plugins/transactions.csv
 
