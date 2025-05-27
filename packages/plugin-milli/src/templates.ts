@@ -6,7 +6,7 @@ export const newsletterTemplate = `
 {{topics}}
 
 # Newsletter Directions
-Follow the following template to generate a newsletter:
+Use the following template to generate a similar newsletter using the recent tweets and topics:
 
 Milli Weekly: Top Highlights
 Week of [Date Range] | Key developments from target accounts
@@ -84,7 +84,4 @@ Generate a newsletter that:
 4. Must include the top 5 tweets from the past 24 hours
 5. Must include highlights from the past 24 hours
 6. Must include a summary of the top 5 news stories from the past 24 hours
-7. Must be entertaining and engaging
-
-
-Generate only the tweet text, no other commentary.`;
+7. Must be entertaining and engaging`;
