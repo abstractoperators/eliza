@@ -982,18 +982,6 @@ async function startAgent(
         // start services/plugins/process knowledge
         await runtime.initialize();
         
-        // Initialize tweet monitoring service for Milli character
-        if (character.name === "Milli" || character.name?.toLowerCase() === "milli") {
-            try {
-                const monitoringService = TweetMonitoringService.getInstance();
-                await monitoringService.initialize(runtime);
-                await monitoringService.start();
-                elizaLogger.info("Tweet monitoring service started for Milli agent");
-            } catch (error) {
-                elizaLogger.error("Failed to start tweet monitoring service:", error);
-            }
-        }
-
         // start assigned clients
         runtime.clients = await initializeClients(character, runtime);
 
