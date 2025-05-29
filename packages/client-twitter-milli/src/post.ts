@@ -5,33 +5,21 @@ import {
     IAgentRuntime,
     stringToUuid,
     UUID,
+    ModelClass,
+    generateMessageResponse,
     truncateToCompleteSentence,
 } from "@elizaos/core";
 import { elizaLogger } from "@elizaos/core";
 import { ClientBase } from "./base.ts";
 import { postActionResponseFooter } from "@elizaos/core";
 import { DEFAULT_MAX_TWEET_LENGTH } from "./environment.ts";
+import { fetchAccountTweets, summarizeContent } from "./utils.ts";
 
 
 const twitterPostTemplate = `
-# Areas of Expertise
-{{knowledge}}
+# News about Sei ecosystem.
 
-# About {{agentName}} (@{{twitterUserName}}):
-{{bio}}
-{{lore}}
-{{topics}}
-
-{{providers}}
-
-{{characterPostExamples}}
-
-{{postDirections}}
-
-# Task: Generate a post in the voice and style and perspective of {{agentName}} @{{twitterUserName}}.
-Write a post that is {{adjective}} about {{topic}} (without mentioning {{topic}} directly), from the perspective of {{agentName}}. Do not add commentary or acknowledge this request, just write the post.
-Your response should be 1, 2, or 3 sentences (choose the length at random).
-Your response should not contain any questions. Brief, concise statements only. The total character count MUST be less than {{maxTweetLength}}. No emojis. Use \\n\\n (double spaces) between statements if there are multiple statements in your response.`;
+# Task: Generate a post that summarize what the Sei community is talking about lately?`;
 
 export const twitterActionTemplate =
     `
@@ -288,129 +276,43 @@ export class TwitterPostClient {
      */
     async generateNewTweet() {
         elizaLogger.log("Generating new tweet");
-
-        try {
-            const roomId = stringToUuid(
+        const roomId = stringToUuid(
                 "twitter_generate_room-" + this.client.profile.username
-            );
-            await this.runtime.ensureUserExists(
-                this.runtime.agentId,
-                this.client.profile.username,
-                this.runtime.character.name,
-                "twitter"
-            );
+        );
+        try {
 
-            const topics = this.runtime.character.topics.join(", ");
+            const monitoredAccounts = this.runtime.getSetting("TWEET_ACCOUNTS_TO_MONITOR")?.split(",") ||
+                                    ["MilliCoinSei", "pebloescobarSEI", "bandosei", "Ryuzaki_SEI", "SeiNetwork", "YakaFinance"];
+            console.log("Monitored accounts: ============", monitoredAccounts);
+                                    const maxTweets = parseInt(this.runtime.getSetting("MAX_TWEETS_PER_ACCOUNT") || "10");
+            let allTweetsFromAccounts: any[] = [];
+            for (const account of monitoredAccounts) {
+                try {
+                    elizaLogger.info(`Fetching tweets from @${account.trim()}`);
 
-            const state = await this.runtime.composeState(
-                {
-                    userId: this.runtime.agentId,
-                    roomId: roomId,
-                    agentId: this.runtime.agentId,
-                    content: {
-                        text: topics || "",
-                        action: "TWEET",
-                    },
-                },
-                {
-                    twitterUserName: this.client.profile.username,
+                    // Fetch real tweets from the account
+                    const accountTweets = await fetchAccountTweets(this.client.twitterClient, account.trim(), maxTweets);
+                    allTweetsFromAccounts = allTweetsFromAccounts.concat(accountTweets);
+                } catch (error) {
+                    elizaLogger.error(`Error fetching tweets from @${account}:`, error);
                 }
-            );
-
-            const context = composeContext({
-                state,
-                template:
-                    this.runtime.character.templates?.twitterPostTemplate ||
-                    twitterPostTemplate,
-            });
-
-            elizaLogger.debug("generate post prompt:\n" + context);
-
-            // const newTweetContent = await generateText({
-            //     runtime: this.runtime,
-            //     context,
-            //     modelClass: ModelClass.SMALL,
-            // });
-
-            const message = {
-                id: stringToUuid("twitter_generate_room-" + this.client.profile.username),
-                agentId: this.runtime.agentId,
-                content: {
-                    text: "Can you summarize what the Sei community is talking about lately?",
-                },
-                roomId,
-                // Timestamps are in seconds, but we need them in milliseconds
-                createdAt: Date.now(),
-            };
-
-            const newTweetContent = '{"text": "Sei is a Layer 1 blockchain optimized for high-performance trading and DeFi applications. It is built using the Cosmos SDK and leverages Tendermint Core for consensus.", "user": "mateo", "timestamp": "2025-05-27T12:00:00Z"}';
-
-            // First attempt to clean content
-            let cleanedContent = "";
-
-            // Try parsing as JSON first
-            try {
-                const parsedResponse = JSON.parse(newTweetContent);
-                if (parsedResponse.text) {
-                    cleanedContent = parsedResponse.text;
-                } else if (typeof parsedResponse === "string") {
-                    cleanedContent = parsedResponse;
-                }
-            } catch (error) {
-                error.linted = true; // make linter happy since catch needs a variable
-                // If not JSON, clean the raw content
-                cleanedContent = newTweetContent
-                    .replace(/^\s*{?\s*"text":\s*"|"\s*}?\s*$/g, "") // Remove JSON-like wrapper
-                    .replace(/^['"](.*)['"]$/g, "$1") // Remove quotes
-                    .replace(/\\"/g, '"') // Unescape quotes
-                    .replace(/\\n/g, "\n\n") // Unescape newlines, ensures double spaces
-                    .trim();
             }
 
-            if (!cleanedContent) {
-                elizaLogger.error(
-                    "Failed to extract valid content from response:",
-                    {
-                        rawResponse: newTweetContent,
-                        attempted: "JSON parsing",
-                    }
-                );
-                return;
-            }
-
-            // Truncate the content to the maximum tweet length specified in the environment settings, ensuring the truncation respects sentence boundaries.
-            const maxTweetLength = this.client.twitterConfig.MAX_TWEET_LENGTH;
-            if (maxTweetLength) {
-                cleanedContent = truncateToCompleteSentence(
-                    cleanedContent,
-                    maxTweetLength
-                );
-            }
-
-            const removeQuotes = (str: string) =>
-                str.replace(/^['"](.*)['"]$/, "$1");
-
-            const fixNewLines = (str: string) => str.replaceAll(/\\n/g, "\n\n"); //ensures double spaces
-
-            // Final cleaning
-            cleanedContent = removeQuotes(fixNewLines(cleanedContent));
-
-            if (this.isDryRun) {
-                elizaLogger.info(
-                    `Dry run: would have posted tweet: ${cleanedContent}`
-                );
-                return;
-            }
+            allTweetsFromAccounts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            allTweetsFromAccounts = allTweetsFromAccounts.slice(0, 20);
+            console.log("Fetched tweets from accounts--------------:", allTweetsFromAccounts);
+            const summarizedContent = await summarizeContent(allTweetsFromAccounts);
+            console.log("Summarized tweets--------------:", summarizedContent);
 
             try {
 
-                elizaLogger.log(`Posting new tweet:\n ${cleanedContent}`);
+                elizaLogger.log(`Posting new tweet:\n ${summarizedContent}`);
                 this.postTweet(
                     this.runtime,
                     this.client,
-                    cleanedContent,
+                    summarizedContent,
                     roomId,
-                    newTweetContent,
+                    summarizedContent,
                     this.twitterUsername
                 );
 

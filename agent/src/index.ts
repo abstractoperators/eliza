@@ -561,6 +561,7 @@ export async function initializeClients(
     }
 
     if (clientTypes.includes(Clients.TWITTERMILLI)) {
+        console.log("Starting Twitter Milli Client");
         const twitterMiiliClient = await TwitterMilliClientInterface.start(runtime);
         if (twitterMiiliClient) {
             clients.twitterMilli = twitterMiiliClient;

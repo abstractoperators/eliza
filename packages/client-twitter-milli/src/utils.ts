@@ -1,4 +1,4 @@
-import { Tweet } from "agent-twitter-client";
+import { Tweet, Scraper } from "agent-twitter-client";
 import { getEmbeddingZeroVector } from "@elizaos/core";
 import { Content, Memory, UUID } from "@elizaos/core";
 import { stringToUuid } from "@elizaos/core";
@@ -7,6 +7,10 @@ import { elizaLogger } from "@elizaos/core";
 import { Media } from "@elizaos/core";
 import fs from "fs";
 import path from "path";
+import { OpenAI } from 'openai';
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY // or your actual key for testing
+});
 
 export const wait = (minTime: number = 1000, maxTime: number = 3000) => {
     const waitTime =
@@ -454,4 +458,80 @@ function splitParagraph(paragraph: string, maxLength: number): string[] {
     const restoredChunks = restoreUrls(splittedChunks, placeholderMap);
 
     return restoredChunks;
+}
+
+
+
+export const summarizeContent= async (tweets: any[]): Promise<string> => {
+    if (tweets.length === 0) return "No recent tweets to summarize.";
+
+    // Use node-summary to create a concise summary
+    const tweetTexts = tweets.map(tweet => tweet.text).join("\n");
+
+    try {
+        const summaryPrompt = `
+            This is top 20 recent tweets from several twitter accounts on Sei ecosystem.
+            Please summarize them to make a newsletter. Include the image context (if any), the article highlights, and the main point of the text.
+            Text:
+            ${tweetTexts}
+        `;
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an assistant that summarizes mixed media content including images, text, and articles."
+                },
+                {
+                    role: "user",
+                    content: summaryPrompt
+                }
+            ],
+            temperature: 0.5
+        });
+        return response.choices[0].message.content || "Summary could not be generated.";
+    } catch (error) {
+        elizaLogger.error("Error summarizing tweets:", error);
+        return "Error generating summary.";
+    }
+}
+
+export const fetchAccountTweets = async (scraper: Scraper, username: string, maxTweets: number): Promise<any[]> => {
+    try {
+        elizaLogger.info(`Fetching ${maxTweets} tweets from @${username}`);
+
+        // Get user profile to get user ID
+        const profile = await scraper.getProfile(username);
+        if (!profile || !profile.userId) {
+            elizaLogger.warn(`Could not find profile for @${username}`);
+            return [];
+        }
+
+        // Fetch tweets from the user
+        const tweets = [];
+        for await (const tweet of scraper.getTweets(username, maxTweets)) {
+            tweets.push({
+                id: tweet.id,
+                text: tweet.text,
+                username: tweet.username,
+                timestamp: new Date(tweet.timestamp),
+                likes: tweet.likes || 0,
+                retweets: tweet.retweets || 0,
+                replies: tweet.replies || 0,
+                hashtags: tweet.hashtags || [],
+                mentions: tweet.mentions || [],
+                urls: tweet.urls || []
+            });
+
+            if (tweets.length >= maxTweets) break;
+        }
+
+        elizaLogger.info(`Successfully fetched ${tweets.length} tweets from @${username}`);
+        return tweets;
+
+    } catch (error) {
+        elizaLogger.error(`Error fetching tweets from @${username}:`, error);
+        return [];
+    }
 }
