@@ -3,22 +3,22 @@ import { Scraper } from "agent-twitter-client";
 import { summarizeExamples } from "../examples";
 import { summarizeContent } from "../utils/tweetUtils";
 
-export const summarizeTweetsAction: Action = {
-    name: "SUMMARIZE_TWEETS",
+export const createNewsletterAction: Action = {
+    name: "CREATE_NEWSLETTER",
     description: "Fetches recent tweets from key Sei community accounts and generates a sentiment-aware summary highlighting trends, engagement, and top topics across the ecosystem.",
     similes: [
-        "GET_TWEETS",
-        "ANALYZE_TWEETS",
-        "TWEET_SUMMARY",
-        "COMMUNITY_UPDATE",
-        "COMMUNITY_SENTIMENT",
-        "SEI_INSIGHT",
-        "SOCIAL_LISTENING",
-        "TWEET_ANALYTICS",
-        "X_FEED_DIGEST",
-        "SENTIMENT_ANALYSIS",
-        "SEI_COMMUNITY_REPORT",
-        "DAILY_COMMUNITY_RECAP"
+        "CREATE_NEWSLETTER",
+        "NEWSLETTER_DRAFT",
+        "WEEKLY_DIGEST",
+        "COMMUNITY_NEWSLETTER",
+        "SEI_ECOSYSTEM_UPDATE",
+        "CURATE_COMMUNITY_NEWS",
+        "WRITE_NEWSLETTER",
+        "NEWSLETTER_SUMMARY",
+        "NEWSLETTER_CONTENT",
+        "NEWSLETTER_EDITOR",
+        "NEWSLETTER_GENERATION",
+        "NEWSLETTER_REPORT"
     ],
     validate: async (runtime: IAgentRuntime, message: Memory) => {
         return true;
@@ -62,21 +62,7 @@ export const summarizeTweetsAction: Action = {
                     elizaLogger.info(`Fetching tweets from @${account.trim()}`);
 
                     // Fetch real tweets from the account
-                    const accountTweets = await fetchAccountTweets(scraper, account.trim(), maxTweets);
-
-                    // Filter out tweets we already have cached
-                    const newTweets = [];
-                    for (const tweet of accountTweets) {
-                        const cachedTweet = await runtime.cacheManager.get(`twitter/tweets/${tweet.id}`);
-                        if (!cachedTweet) {
-                            newTweets.push(tweet);
-                            // Cache new tweet
-                            await runtime.cacheManager.set(
-                                `twitter/tweets/${tweet.id}`,
-                                JSON.stringify(tweet)
-                            );
-                        }
-                    }
+                    const accountTweets = await fetchAccountTweets(runtime, scraper, account.trim(), maxTweets);
 
                     if (accountTweets.length > 0) {
                         const summarizedContent = await summarizeContent(accountTweets);
@@ -98,7 +84,7 @@ export const summarizeTweetsAction: Action = {
 
 
 // Helper functions
-async function fetchAccountTweets(scraper: Scraper, username: string, maxTweets: number): Promise<any[]> {
+async function fetchAccountTweets(runtime: IAgentRuntime, scraper: Scraper, username: string, maxTweets: number): Promise<any[]> {
     try {
         elizaLogger.info(`Fetching ${maxTweets} tweets from @${username}`);
 
@@ -112,18 +98,30 @@ async function fetchAccountTweets(scraper: Scraper, username: string, maxTweets:
         // Fetch tweets from the user
         const tweets = [];
         for await (const tweet of scraper.getTweets(username, maxTweets)) {
-            tweets.push({
-                id: tweet.id,
-                text: tweet.text,
-                username: tweet.username,
-                timestamp: new Date(tweet.timestamp),
-                likes: tweet.likes || 0,
-                retweets: tweet.retweets || 0,
-                replies: tweet.replies || 0,
-                hashtags: tweet.hashtags || [],
-                mentions: tweet.mentions || [],
-                urls: tweet.urls || []
-            });
+            // Check cache first
+            const cachedTweet = await runtime.cacheManager.get(`twitter/tweets/${tweet.id}`);
+            if (cachedTweet && typeof cachedTweet == 'string') {
+                tweets.push(JSON.parse(cachedTweet));
+            } else {
+                const tweetData = {
+                    id: tweet.id,
+                    text: tweet.text,
+                    username: tweet.username,
+                    timestamp: new Date(tweet.timestamp),
+                    likes: tweet.likes || 0,
+                    retweets: tweet.retweets || 0,
+                    replies: tweet.replies || 0,
+                    hashtags: tweet.hashtags || [],
+                    mentions: tweet.mentions || [],
+                    urls: tweet.urls || []
+                };
+                // Cache new tweet
+                await runtime.cacheManager.set(
+                    `twitter/tweets/${tweet.id}`,
+                    JSON.stringify(tweetData)
+                );
+                tweets.push(tweetData);
+            }
 
             if (tweets.length >= maxTweets) break;
         }

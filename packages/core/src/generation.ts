@@ -258,6 +258,9 @@ export async function generateText({
         return "";
     }
 
+    // console.log("*****GENERATE TEXT*******");
+    // console.log(context);
+
     elizaLogger.log("Generating text...");
 
     elizaLogger.info("Generating text with options:", {

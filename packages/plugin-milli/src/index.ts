@@ -10,22 +10,16 @@ import { summarizeTweetsAction } from "./actions/summarizeTweets";
 import { analyzeSentimentAction } from "./actions/analyzeSentiment";
 import { tweetRetrievalProvider } from "./providers/tweetRetrievalProvider";
 import { communityStatsProvider } from "./providers/communityStatsProvider";
-import { TweetMonitoringService } from "./services/tweetMonitoringService";
+import { tweetDataProvider } from "./providers/tweetDataProvider";
+//import { TweetMonitoringService } from "./services/tweetMonitoringService";
+import { tweetDataEvaluator } from "./evaluators/tweetDataEvaluator";
 
 export const milliPlugin: Plugin = {
     name: "milli",
     description: "Community sentiment tracking and tweet analysis for crypto ecosystems",
-    actions: [
-        summarizeTweetsAction,
-        analyzeSentimentAction,
-    ],
-    providers: [
-        tweetRetrievalProvider,
-        communityStatsProvider,
-    ],
-    // services: [
-    //     TweetMonitoringService,
-    // ],
+    actions: [],
+    providers: [tweetDataProvider],
+    evaluators: [tweetDataEvaluator]
 };
 
 export default milliPlugin;
