@@ -177,14 +177,14 @@ export async function validateTwitterConfig(
             SUMMARY_INTERVAL_MIN: safeParseInt(
                 runtime.getSetting("SUMMARY_INTERVAL_MIN") ||
                     process.env.SUMMARY_INTERVAL_MIN,
-                90 // 1.5 hours
+                720 // 12 hours
             ),
 
             // int in minutes
             SUMMARY_INTERVAL_MAX: safeParseInt(
                 runtime.getSetting("SUMMARY_INTERVAL_MAX") ||
                     process.env.SUMMARY_INTERVAL_MAX,
-                180 // 3 hours
+                1440 // 1 day
             ),
 
             // bool

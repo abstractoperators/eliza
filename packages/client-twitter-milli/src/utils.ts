@@ -470,8 +470,9 @@ export const summarizeContent= async (tweets: any[]): Promise<string> => {
 
     try {
         const summaryPrompt = `
-            This is top 20 recent tweets from several twitter accounts on Sei ecosystem.
+            This is top 10 recent tweets from several twitter accounts on Sei ecosystem.
             Please summarize them to make a newsletter. Include the image context (if any), the article highlights, and the main point of the text.
+            Summary should start with: Here‘s your daily sei newsletter
             Text:
             ${tweetTexts}
         `;
