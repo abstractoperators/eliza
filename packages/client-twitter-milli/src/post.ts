@@ -86,8 +86,8 @@ export class TwitterPostClient {
             }>("twitter/" + this.twitterUsername + "/lastPost");
 
             const lastPostTimestamp = lastPost?.timestamp ?? 0;
-            const minMinutes = this.client.twitterConfig.POST_INTERVAL_MIN;
-            const maxMinutes = this.client.twitterConfig.POST_INTERVAL_MAX;
+            const minMinutes = this.client.twitterConfig.SUMMARY_INTERVAL_MIN;
+            const maxMinutes = this.client.twitterConfig.SUMMARY_INTERVAL_MAX;
             const randomMinutes =
                 Math.floor(Math.random() * (maxMinutes - minMinutes + 1)) +
                 minMinutes;
@@ -283,7 +283,6 @@ export class TwitterPostClient {
 
             const monitoredAccounts = this.runtime.getSetting("TWEET_ACCOUNTS_TO_MONITOR")?.split(",") ||
                                     ["MilliCoinSei", "pebloescobarSEI", "bandosei", "Ryuzaki_SEI", "SeiNetwork", "YakaFinance"];
-            console.log("Monitored accounts: ============", monitoredAccounts);
                                     const maxTweets = parseInt(this.runtime.getSetting("MAX_TWEETS_PER_ACCOUNT") || "10");
             let allTweetsFromAccounts: any[] = [];
             for (const account of monitoredAccounts) {
@@ -301,7 +300,8 @@ export class TwitterPostClient {
             allTweetsFromAccounts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
             allTweetsFromAccounts = allTweetsFromAccounts.slice(0, 20);
             console.log("Fetched tweets from accounts--------------:", allTweetsFromAccounts);
-            const summarizedContent = await summarizeContent(allTweetsFromAccounts);
+            let summarizedContent = await summarizeContent(allTweetsFromAccounts);
+            summarizedContent.replace(/\*\*/g, "");
             console.log("Summarized tweets--------------:", summarizedContent);
 
             try {

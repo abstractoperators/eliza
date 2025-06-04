@@ -65,8 +65,8 @@ export const twitterEnvSchema = z.object({
         .optional()
         .default(''),
     */
-    POST_INTERVAL_MIN: z.number().int(),
-    POST_INTERVAL_MAX: z.number().int(),
+    SUMMARY_INTERVAL_MIN: z.number().int(),
+    SUMMARY_INTERVAL_MAX: z.number().int(),
     ENABLE_ACTION_PROCESSING: z.boolean(),
     ACTION_INTERVAL: z.number().int(),
     POST_IMMEDIATELY: z.boolean(),
@@ -174,17 +174,17 @@ export async function validateTwitterConfig(
             ),
 
             // int in minutes
-            POST_INTERVAL_MIN: safeParseInt(
-                runtime.getSetting("POST_INTERVAL_MIN") ||
-                    process.env.POST_INTERVAL_MIN,
-                90 // 1.5 hours
+            SUMMARY_INTERVAL_MIN: safeParseInt(
+                runtime.getSetting("SUMMARY_INTERVAL_MIN") ||
+                    process.env.SUMMARY_INTERVAL_MIN,
+                720 // 12 hours
             ),
 
             // int in minutes
-            POST_INTERVAL_MAX: safeParseInt(
-                runtime.getSetting("POST_INTERVAL_MAX") ||
-                    process.env.POST_INTERVAL_MAX,
-                180 // 3 hours
+            SUMMARY_INTERVAL_MAX: safeParseInt(
+                runtime.getSetting("SUMMARY_INTERVAL_MAX") ||
+                    process.env.SUMMARY_INTERVAL_MAX,
+                1440 // 1 day
             ),
 
             // bool
