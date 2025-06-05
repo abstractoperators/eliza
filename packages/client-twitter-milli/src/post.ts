@@ -300,21 +300,29 @@ export class TwitterPostClient {
             allTweetsFromAccounts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
             allTweetsFromAccounts = allTweetsFromAccounts.slice(0, 20);
             console.log("Fetched tweets from accounts--------------:", allTweetsFromAccounts);
-            let summarizedContent = await summarizeContent(allTweetsFromAccounts);
-            summarizedContent.replace(/\*\*/g, "");
-            console.log("Summarized tweets--------------:", summarizedContent);
+            let summarizedTweetChunks  = await summarizeContent(allTweetsFromAccounts);
+            // summarizedContent.replace(/\*\*/g, "");
+            console.log("Summarized tweets--------------:", summarizedTweetChunks);
 
             try {
+                let replyToId: string | undefined = undefined;
+                for (let i = 0; i < summarizedTweetChunks.length; i++) {
+                    const chunk = summarizedTweetChunks[i];
 
-                elizaLogger.log(`Posting new tweet:\n ${summarizedContent}`);
-                this.postTweet(
-                    this.runtime,
-                    this.client,
-                    summarizedContent,
-                    roomId,
-                    summarizedContent,
-                    this.twitterUsername
-                );
+                    const result = await this.sendStandardTweet(this.client, chunk, replyToId);
+                    if (!result) break;
+
+                    const tweet = this.createTweetObject(result, this.client, this.twitterUsername);
+                    replyToId = tweet.id;
+
+                    await this.processAndCacheTweet(
+                        this.runtime,
+                        this.client,
+                        tweet,
+                        roomId,
+                        chunk
+                    );
+                }
 
             } catch (error) {
                 elizaLogger.error("Error sending tweet:", error);

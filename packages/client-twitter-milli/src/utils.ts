@@ -462,28 +462,26 @@ function splitParagraph(paragraph: string, maxLength: number): string[] {
 
 
 
-export const summarizeContent= async (tweets: any[]): Promise<string> => {
-    if (tweets.length === 0) return "No recent tweets to summarize.";
-
-    // Use node-summary to create a concise summary
-    const tweetTexts = tweets.map(tweet => tweet.text).join("\n");
+export const summarizeContent= async (tweets: any[]): Promise<string[]> => {
+    if (tweets.length === 0) return ["No recent tweets to summarize."];
 
     try {
         const summaryPrompt = `
-            This is a collection of recent tweets from Sei ecosystem accounts.
-Please summarize them into a newsletter format following this structure:
+            You are a crypto-focused AI agent summarizing recent conversations from the Sei ecosystem.
 
-**NEWSLETTER FORMAT:**
-- Start with this header/title: "Here's your Twice-Daily Sei Newsletter:"
-- **@millicoinsei & @seinetwork Updates** (prioritize these accounts first)
-- **Ecosystem Highlights** (other important updates, @YakaFinance, @pebloescobarSEI, @bandosei, @ryuzaki_sei)
-- **Community Buzz** (smaller updates/mentions)
-- End with a brief outlook or key takeaway
+            TASK: 
+            Summarize the most important updates, trends, and discussions happening in the Sei community based on the following tweets.
 
-For each section: Include image context (if any), article highlights, and main points. Keep summaries concise but informative.
-
-Text:
-${tweetTexts}
+            FORMAT:
+            - Break the summary into tweet-sized chunks (each <= 280 characters)
+            - Maintain continuity between tweets so they form a readable thread
+            - Start with a hook, end with a call to action or summary tag
+            - Keep tone informative, friendly, and crypto-native
+            TWEETS:
+            ${tweets.map(t => `@${t.username}: ${t.text}`).join("\n\n")}
+            
+            OUTPUT:
+            Return an array of tweet-sized strings in proper thread order.
         `;
 
         const response = await openai.chat.completions.create({
@@ -491,7 +489,7 @@ ${tweetTexts}
             messages: [
                 {
                     role: "system",
-                    content: "You are an assistant that summarizes mixed media content including images, text, and articles."
+                    content: "You are an assistant that creates Twitter threads from mixed media summaries"
                 },
                 {
                     role: "user",
@@ -500,10 +498,15 @@ ${tweetTexts}
             ],
             temperature: 0.5
         });
-        return response.choices[0].message.content || "Summary could not be generated.";
+        const fullResponse = response.choices[0].message.content || "";
+        // Split by newlines or bullet points for individual tweets
+        return fullResponse
+            .split(/\n(?=- )|(?=Here's your)/g) // crude thread split logic
+            .map(t => t.trim())
+            .filter(t => t.length > 0);
     } catch (error) {
         elizaLogger.error("Error summarizing tweets:", error);
-        return "Error generating summary.";
+        return ["Error generating summary."];
     }
 }
 
