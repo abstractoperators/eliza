@@ -470,11 +470,20 @@ export const summarizeContent= async (tweets: any[]): Promise<string> => {
 
     try {
         const summaryPrompt = `
-            This is top 10 recent tweets from several twitter accounts on Sei ecosystem.
-            Please summarize them to make a newsletter. Include the image context (if any), the article highlights, and the main point of the text.
-            Summary should start with: Here‘s your daily sei newsletter
-            Text:
-            ${tweetTexts}
+            This is a collection of recent tweets from Sei ecosystem accounts.
+Please summarize them into a newsletter format following this structure:
+
+**NEWSLETTER FORMAT:**
+- Start with this header/title: "Here's your Daily Sei Newsletter:"
+- **@millicoinsei & @seinetwork Updates** (prioritize these accounts first)
+- **Ecosystem Highlights** (other important updates, @YakaFinance, @pebloescobarSEI, @bandosei, @ryuzaki_sei)
+- **Community Buzz** (smaller updates/mentions)
+- End with a brief outlook or key takeaway
+
+For each section: Include image context (if any), article highlights, and main points. Keep summaries concise but informative.
+
+Text:
+${tweetTexts}
         `;
 
         const response = await openai.chat.completions.create({
