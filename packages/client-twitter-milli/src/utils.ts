@@ -474,7 +474,7 @@ export const summarizeContent= async (tweets: any[]): Promise<string> => {
 Please summarize them into a newsletter format following this structure:
 
 **NEWSLETTER FORMAT:**
-- Start with this header/title: "Here's your Daily Sei Newsletter:"
+- Start with this header/title: "Here's your Twice-Daily Sei Newsletter:"
 - **@millicoinsei & @seinetwork Updates** (prioritize these accounts first)
 - **Ecosystem Highlights** (other important updates, @YakaFinance, @pebloescobarSEI, @bandosei, @ryuzaki_sei)
 - **Community Buzz** (smaller updates/mentions)
