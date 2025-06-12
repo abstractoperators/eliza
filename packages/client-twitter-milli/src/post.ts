@@ -305,22 +305,33 @@ export class TwitterPostClient {
             let summarizedContent = await summarizeContent(allTweetsFromAccounts);
             summarizedContent.replace(/\*\*/g, "");
             console.log("Summarized tweets--------------:", summarizedContent);
+            const threadedTweets = summarizedContent
+                .split("Tweet")
+                .map(str => str.trim())
+                .filter(str => str.length > 0);
+
+            console.log("Threaded Tweets--------------:", threadedTweets);
+
 
             try {
+                let lastTweetId = null;
 
-                elizaLogger.log(`Posting new tweet:\n ${summarizedContent}`);
-                this.postTweet(
-                    this.runtime,
-                    this.client,
-                    summarizedContent,
-                    roomId,
-                    summarizedContent,
-                    this.twitterUsername
-                );
+                for (const tweet of threadedTweets) {
+                    const newTweet = await this.client.twitterClient.sendTweet(
+                        tweet,
+                        lastTweetId ?? undefined,
+                    );
+                    const tweetData = await newTweet.json();
 
-            } catch (error) {
-                elizaLogger.error("Error sending tweet:", error);
+                    lastTweetId = tweetData?.data?.create_tweet?.tweet_results?.result?.rest_id;
+                    // console.log(`Posted tweet: ${newTweet.data.id}`);
+                    console.log("✅ Thread posted successfully!", lastTweetId);
+                }
+
+            } catch (err) {
+                console.error("❌ Error posting thread:", err);
             }
+
         } catch (error) {
             elizaLogger.error("Error generating new tweet:", error);
         }

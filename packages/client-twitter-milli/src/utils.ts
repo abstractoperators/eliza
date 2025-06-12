@@ -469,32 +469,29 @@ export const summarizeContent= async (tweets: any[]): Promise<string> => {
     const tweetTexts = tweets.map(tweet => tweet.text).join("\n");
 
     try {
-        const summaryPrompt = `
-            This is a collection of recent tweets from Sei ecosystem accounts.
-Please summarize them into a newsletter format following this structure:
+        const summaryPrompt =`
+            You are creating a Twitter/X thread summarizing the latest updates from Sei ecosystem accounts.
 
-🌊 Here's your Daily Sei Newsletter
+            Break down the following tweets into a clear, engaging thread. Use this format:
 
-📊 @millicoinsei & @seinetwork Updates
-- [Key update 1]
-- [Key update 2]
+            Tweet 1 (Intro):
+            🌊 Here's your Sei Ecosystem Weekly Thread!
+            Catch the latest from @SeiNetwork, @MilliCoinSei, @YakaFinance, and more ⬇️
+            #Sei #SeiNetwork $SEI
 
-🚀 Ecosystem Highlights  
-- @YakaFinance: [update]
-- @pebloescobarSEI: [update] 
-- @bandosei: [update]
-- @ryuzaki_sei: [update]
+            Tweet 2+: Summarize updates by account or topic. Each tweet should:
+            - Start with the account name or theme (e.g., "@MilliCoinSei Update:", "🚀 Ecosystem Buzz:")
+            - Be short (within ~280 characters)
+            - Include emojis where appropriate
+            - Use 1–2 bullet points or a sentence per update
+            - Tag the account when relevant
 
-💬 Community Buzz
-- [Community highlight 1]
-- [Community highlight 2]
+            Tweet Final:
+            🔮 Outlook: [Short takeaway or upcoming event]
+            Follow for more Sei ecosystem insights! #Sei #SeiNetwork $SEI
 
-🔮 Outlook: [Brief key takeaway]
-
-#Sei #SeiNetwork $SEI
-
-Text:
-${tweetTexts}
+            Text:
+            ${tweetTexts}
         `;
 
         const response = await openai.chat.completions.create({
