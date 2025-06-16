@@ -308,7 +308,11 @@ export class TwitterPostClient {
             const threadedTweets = summarizedContent
                 .split("Tweet")
                 .map(str => str.trim())
-                .filter(str => str.length > 0);
+                .filter(str => str.length > 0)
+                .map(item => {
+                    return item.replace(/^\d+[:\s]*/, '');
+                })
+                .map(item => item.replace(/^\([^)]*\):?\s*/, ''));
 
             console.log("Threaded Tweets--------------:", threadedTweets);
 
