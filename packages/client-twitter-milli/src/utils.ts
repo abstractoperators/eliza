@@ -470,32 +470,51 @@ export const summarizeContent= async (tweets: any[]): Promise<string> => {
 
     try {
         const summaryPrompt = `
-            This is a collection of recent tweets from Sei ecosystem accounts.
-Please summarize them into a newsletter format following this structure:
+            You are a crypto newsletter writer summarizing updates from the Sei ecosystem. You will receive a list of tweets, delimited below. 
+            Categorize and summarize them into a structured newsletter in markdown using the format provided.
 
-🌊 Here's your Daily Sei Newsletter
+            <<<BEGIN_TWEETS
+            ${tweetTexts}
+            <<<END_TWEETS
 
-📊 @millicoinsei & @seinetwork Updates
-- [Key update 1]
-- [Key update 2]
+            Instructions:
+            1. Group tweets into the following categories which will be posted in the newsletter thread:
+                - @millicoinsei & @seinetwork Updates: Official protocol updates.
+                - Ecosystem Highlights: Project updates from @YakaFinance, @pebloescobarSEI, @bandosei, @ryuzaki_sei, etc.
+                - Community Buzz: Tweets from users showing opinions, shoutouts, or reactions.
+                - Outlook: A short key takeaway (1–2 lines) that reflects today’s general sentiment or progress.
+            2. Write in a clean, informative, friendly tone.
+            3. Include emojis where appropriate.
+            4. Use clear, concise bullet points (under ~20 words each).
+            5. If no tweets match a section, omit that section.
+            6. Do not invent content — only use what’s in the tweets.
 
-🚀 Ecosystem Highlights  
-- @YakaFinance: [update]
-- @pebloescobarSEI: [update] 
-- @bandosei: [update]
-- @ryuzaki_sei: [update]
+            Output format:
 
-💬 Community Buzz
-- [Community highlight 1]
-- [Community highlight 2]
+            Intro Tweet:
+            🚀 Here's your Daily Sei Newsletter
+            Catch the latest from @SeiNetwork, @MilliCoinSei, YakaFinance, and more ⬇️
 
-🔮 Outlook: [Brief key takeaway]
+            Subsequent Tweets:
+            📊 @millicoinsei & @seinetwork Updates
+            - [Key update 1]
+            - [Key update 2]
 
-#Sei #SeiNetwork $SEI
+            🌊 Ecosystem Highlights  
+            - @YakaFinance: [update]
+            - @pebloescobarSEI: [update] 
+            - @bandosei: [update]
+            - @ryuzaki_sei: [update]
 
-Text:
-${tweetTexts}
-        `;
+            💬 Community Buzz
+            - [Community highlight 1]
+            - [Community highlight 2]
+
+            Final Tweet:
+            🔮 Outlook: [Brief key takeaway]
+            Follow for more Sei Ecosystem insights!
+
+            #Sei #SeiNetwork $SEI`;
 
         const response = await openai.chat.completions.create({
             model: "gpt-4",
