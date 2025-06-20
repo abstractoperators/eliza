@@ -22712,6 +22712,7 @@ packages:
                 integrity: sha512-ywPWvcDMeH+z9gQq5qYHCCy+ethsk4goepZ45GLD63fOu0YcNecQxi64nDs3qluZB+murG3/D4dJ7+dGctcCQQ==,
             }
         engines: { node: ">= 6.0.0" }
+        deprecated: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
 
     multi-integer-range@3.0.0:
         resolution:
