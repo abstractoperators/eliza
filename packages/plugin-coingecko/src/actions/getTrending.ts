@@ -87,6 +87,7 @@ export default {
         callback?: HandlerCallback
     ): Promise<boolean> => {
         elizaLogger.log("Starting CoinGecko GET_TRENDING handler...");
+        console.log("AP STATE: ", { ...state }, "END OF STATE");
 
         if (!state) {
             state = (await runtime.composeState(message)) as State;

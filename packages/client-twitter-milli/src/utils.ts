@@ -469,21 +469,38 @@ export const summarizeContent= async (tweets: any[]): Promise<string> => {
     const tweetTexts = tweets.map(tweet => tweet.text).join("\n");
 
     try {
-        const summaryPrompt = `
-            This is a collection of recent tweets from Sei ecosystem accounts.
-Please summarize them into a newsletter format following this structure:
+        const summaryPrompt =`
+            You are creating a Twitter/X thread summarizing the latest updates from Sei ecosystem accounts.
 
+<<<<<<< HEAD
 **NEWSLETTER FORMAT:**
 - Start with this header/title: "Here's your Daily Sei Newsletter:"
 - **@millicoinsei & @seinetwork Updates** (prioritize these accounts first)
 - **Ecosystem Highlights** (other important updates, @YakaFinance, @pebloescobarSEI, @bandosei, @ryuzaki_sei)
 - **Community Buzz** (smaller updates/mentions)
 - End with a brief outlook or key takeaway
+=======
+            Break down the following tweets into a clear, engaging thread. Use this format:
+>>>>>>> bc8c413dd61d2043490ef1ada77cf3abd2b192a4
 
-For each section: Include image context (if any), article highlights, and main points. Keep summaries concise but informative.
+            Tweet 1 (Intro):
+            🌊 Here's your Sei Ecosystem Weekly Thread!
+            Catch the latest from @SeiNetwork, @MilliCoinSei, @YakaFinance, and more ⬇️
+            #Sei #SeiNetwork $SEI
 
-Text:
-${tweetTexts}
+            Tweet 2+: Summarize updates by account or topic. Each tweet should:
+            - Start with the account name or theme (e.g., "@MilliCoinSei Update:", "🚀 Ecosystem Buzz:")
+            - Be short (within ~280 characters)
+            - Include emojis where appropriate
+            - Use 1–2 bullet points or a sentence per update
+            - Tag the account when relevant
+
+            Tweet Final:
+            🔮 Outlook: [Short takeaway or upcoming event]
+            Follow for more Sei ecosystem insights! #Sei #SeiNetwork $SEI
+
+            Text:
+            ${tweetTexts}
         `;
 
         const response = await openai.chat.completions.create({
