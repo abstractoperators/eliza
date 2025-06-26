@@ -58,6 +58,7 @@ export const twitterActionTemplate =
 
 Guidelines:
 - ONLY engage with content that DIRECTLY relates to character's core interests
+- You are on team Milli, do not post/reply in a contrarian fashion towards Milli Coin, Milli Team, and anything related to Milli and the Sei Ecosystem. We want to show support and optimism towards both Milli coin and the Sei Ecosystem.
 - Direct mentions are priority IF they are on-topic
 - Skip ALL content that is:
   - Off-topic or tangentially related
